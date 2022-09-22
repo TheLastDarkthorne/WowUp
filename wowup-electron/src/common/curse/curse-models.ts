@@ -1,4 +1,16 @@
-export type CurseGameVersionFlavor = "wow_retail" | "wow_classic" | "wow_burning_crusade";
+export enum CurseGameVersionFlavor {
+  Retail = "wow_retail",
+  Classic =  "wow_classic",
+  BurningCrusade = "wow_burning_crusade",
+  WrathOfTheLichKing = "wow_wotlk_classic",
+}
+
+export enum CurseGameVersionType {
+  Retail = 517, // WoW
+  Classic = 67408, // WoW Classic
+  BurningCrusade = 73246, // WoW Burning Crusade Classic
+  WrathOfTheLichKing = 73713, // Wow Wrath of the Lich King Classic
+}
 
 // see https://addons-ecs.forgesvc.net/api/v2/category/section/1
 export enum CurseAddonCategory {

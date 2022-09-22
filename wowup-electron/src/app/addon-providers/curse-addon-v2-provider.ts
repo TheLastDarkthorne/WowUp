@@ -15,7 +15,6 @@ import {
   CF2GetFingerprintMatchesRequest,
   CF2GetModsRequest,
   CF2SearchModsParams,
-  CF2WowGameVersionType,
   CFV2Client,
 } from "curseforge-v2";
 
@@ -25,7 +24,11 @@ import {
   NO_SEARCH_RESULTS_ERROR,
   PREF_CF2_API_KEY,
 } from "../../common/constants";
-import { CurseAddonCategory, CurseGameVersionFlavor } from "../../common/curse/curse-models";
+import {
+  CurseAddonCategory,
+  CurseGameVersionFlavor,
+  CurseGameVersionType,
+} from "../../common/curse/curse-models";
 import { Addon } from "../../common/entities/addon";
 import { WowClientGroup, WowClientType } from "../../common/warcraft/wow-client-type";
 import { AddonCategory, AddonChannelType, AddonDependencyType, AddonWarningType } from "../../common/wowup/models";
@@ -62,18 +65,18 @@ export const CF2_API_KEY = "$2a$10$bL4bIL5pUWqfcO7KQtnMReakwtfHbNKh6v1uTpKlzhwou
 
 const GAME_TYPE_LISTS = [
   {
-    flavor: "wow_classic",
-    typeId: 67408,
+    flavor: [CurseGameVersionFlavor.Classic],
+    typeId: [CurseGameVersionType.Classic],
     matches: [WowClientType.ClassicEra, WowClientType.ClassicEraPtr],
   },
   {
-    flavor: "wow_burning_crusade",
-    typeId: 73246,
+    flavor: [CurseGameVersionFlavor.WrathOfTheLichKing, CurseGameVersionFlavor.BurningCrusade],
+    typeId: [CurseGameVersionType.WrathOfTheLichKing, CurseGameVersionType.BurningCrusade],
     matches: [WowClientType.Classic, WowClientType.ClassicPtr, WowClientType.ClassicBeta],
   },
   {
-    flavor: "wow_retail",
-    typeId: 517,
+    flavor: [CurseGameVersionFlavor.Retail],
+    typeId: [CurseGameVersionType.Retail],
     matches: [WowClientType.Retail, WowClientType.RetailPtr, WowClientType.Beta],
   },
 ];
@@ -758,7 +761,7 @@ export class CurseAddonV2Provider extends AddonProvider {
 
   private async getCategoryAddons(
     category: CurseAddonCategory,
-    gameVersionFlavor: CF2WowGameVersionType,
+    gameVersionFlavor: CurseGameVersionType,
     pageSize: number,
     pageNumber: number
   ): Promise<CF2Addon[]> {
@@ -831,7 +834,7 @@ export class CurseAddonV2Provider extends AddonProvider {
       throw new Error(`Game type not found: ${clientType}`);
     }
 
-    return gameType.typeId;
+    return gameType.typeId[0];
   }
 
   private getGameVersionFlavor(clientType: WowClientType): CurseGameVersionFlavor {
@@ -840,7 +843,7 @@ export class CurseAddonV2Provider extends AddonProvider {
       throw new Error(`Game type not found: ${clientType}`);
     }
 
-    return gameType.flavor as CurseGameVersionFlavor;
+    return gameType.flavor[0];
   }
 
   private getValidClientTypes(file: CF2File): WowClientType[] {
@@ -848,7 +851,7 @@ export class CurseAddonV2Provider extends AddonProvider {
 
     const flavorMatches =
       GAME_TYPE_LISTS.find(
-        (list) => file.sortableGameVersions.find((sgv) => sgv.gameVersionTypeId === list.typeId) !== undefined
+        (list) => file.sortableGameVersions.find((sgv) => list.typeId.includes(sgv.gameVersionTypeId)) !== undefined
       )?.matches ?? [];
 
     gameVersions.push(...flavorMatches);
@@ -1025,16 +1028,18 @@ export class CurseAddonV2Provider extends AddonProvider {
     }
   }
 
-  private getCFGameVersionType(clientType: WowClientType): CF2WowGameVersionType {
+  private getCFGameVersionType(clientType: WowClientType): CurseGameVersionType {
     const clientGroup = getWowClientGroup(clientType);
 
     switch (clientGroup) {
       case WowClientGroup.BurningCrusade:
-        return CF2WowGameVersionType.BurningCrusade;
+        return CurseGameVersionType.BurningCrusade;
+      case WowClientGroup.WOTLK:
+        return CurseGameVersionType.WrathOfTheLichKing;
       case WowClientGroup.Classic:
-        return CF2WowGameVersionType.Classic;
+        return CurseGameVersionType.Classic;
       case WowClientGroup.Retail:
-        return CF2WowGameVersionType.Retail;
+        return CurseGameVersionType.Retail;
       default:
         throw new Error(`invalid game type: ${clientGroup as string}`);
     }
