@@ -47,7 +47,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         run: |
           cd ./wowup-electron
-          npm i
+          npm ci --force
           npm run electron:publish
 
       - name: Build Mac App
@@ -57,11 +57,11 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: |
           cd ./wowup-electron
-          npm i
+          npm ci --force
           npm run electron:publish
 
       - name: Build Windows App
         if: matrix.os == 'windows-latest'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        run: cd ./wowup-electron && npm ci && npm run electron:publish
+        run: cd ./wowup-electron && npm ci --force && npm run electron:publish
